@@ -27,3 +27,25 @@ int main(){
 
 ### Shellshock 취약점 (CVE-2014-6271)
 
+Shellshock 취약점은 GNU bash 4.3 이전 버전에서 40년 이상 방치된 심각한 취약점이다. bash shell의 환경 변수 선언과 자식 shell에서의 환경 변수 파싱 및 실행에 관련해 취약점이 발생했다. 환경 변수로 bash 함수를 선언할 수 있는데, 이 때 함수 뒤에 임의의 명령어를 추가하면 자식 shell이 실행될 때 해당 임의의 명령어가 실행되는 것이다. 
+
+```bash
+$ export x='() { echo hi; }'
+```
+위와 같이 환경변수 x를 설정하면 현재 shell에서는 x로 "echo hi"를 실행할 수 없다. 하지만 여기서 Shellshock에 취약한 bash를 자식 shell로 실행하면 export한 환경변수 x가 파싱되면서 자동으로 함수로 취급되어 자식 shell에서는 정상적으로 "echo hi"를 실행할 수 있다. 여기서 문제가 발생한다. 함수 선언 뒤에 세미콜론을 붙여 다른 명령어를 이어서 작성하면 자식 bash shell이 실행될 때 해당 명령어가 자동으로 실행된다. 
+
+```bash
+$ export x='() { echo hi; }; /bin/cat flag'
+$ ./bash
+```
+
+위와 같이 환경변수를 선언하고 "./bash" (/home/shellshock/bash) 를 실행하면 "Permission denied" 메시지가 뜬다. /bin/cat flag 명령은 정상적으로 실행되었지만 해당 공격은 권한 상승을 얻을 수는 없으므로 해당 메시지가 발생한 것이다. 하지만 shellshock.c 에서는 shellshock_pwn 의 권한으로 ./bash 를 실행하고 있다. 
+
+```bash
+$ export x='() { echo hi; }; /bin/cat flag'
+$ ./shellshock
+```
+
+![](./images/3.png)
+
+shellshock_pwn의 권한으로 /bin/cat flag가 실행되어 flag의 내용을 얻었다. "only if ..." 가 이번 문제의 flag이다.
