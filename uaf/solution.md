@@ -239,4 +239,4 @@ $
 
 알고 보니 Man, Woman 객체가 할당된 메모리 청크의 크기가 24 byte가 아니었다. Heap 메모리 구조에 관해 더 공부를 해야할 것 같다. 
 
-[About Heap](./heap.md)
+[About Heap](./heap/heap.md)
